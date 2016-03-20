@@ -1,14 +1,15 @@
 (ns replbot.plugins.eval
   (:require [replbot.core :refer [config]]
+            [replbot.plugin :as plugin]
             [clojail.core    :refer [sandbox safe-read]]
             [clojail.testers :refer [secure-tester secure-tester-without-def]]
             [clojure.string :refer [starts-with?]])
-  (:import [replbot.core Plugin PluginDocs ActivationDocs]
+  (:import [replbot.plugin Plugin PluginDocs ActivationDocs]
            [java.io StringWriter]
            [java.util.concurrent ExecutionException]))
 
 (defn eval? [packet]
-  (starts-with? (:body packet) (:eval-prefix config)))
+  (starts-with? (:body packet) (-> config :plugins :eval :prefix)))
 
 (defn make-safe-eval
   [{sandbox-config :sandbox}]
@@ -44,11 +45,14 @@
         (safe-eval (safe-read (.substring (:body packet) 1)) output)
         (.toString output)))))
 
-(def eval-plugin (Plugin. #'clj-eval
-                          (PluginDocs. "Evaluate Clojure Expression"
-                                       "Evaluates a clojure expression in a sandbox environment."
-                                       [(ActivationDocs. :eval
-                                                         #(format "%s(expression)"
-                                                                  (:eval-prefix config))
-                                                         "Evaluate (expression)")])
-                          nil))
+(def plugin (Plugin. #'clj-eval
+                     (PluginDocs. "Evaluate Clojure Expression"
+                                  "Evaluates a clojure expression in a sandbox environment."
+                                  [(ActivationDocs. :eval
+                                                    #(format "%s(expression)"
+                                                             (:eval-prefix config))
+                                                    "Evaluate (expression)")])
+                     nil))
+
+(defmethod plugin/get-all (ns-name *ns*) [_]
+  {:eval plugin})
