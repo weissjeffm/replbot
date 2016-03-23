@@ -1,7 +1,7 @@
 (ns replbot.core
-  (:require [quit-yo-jibber :as xmpp]
-            [quit-yo-jibber.muc :as xmpp-muc]
-            [quit-yo-jibber.presence :as xmpp-presence]
+  (:require [replbot.xmpp.core :as xmpp]
+            [replbot.xmpp.muc :as xmpp-muc]
+            [replbot.xmpp.presence :as xmpp-presence]
             [replbot.plugin :as plugin])
   (:import [org.jxmpp.util XmppStringUtils]))
 
