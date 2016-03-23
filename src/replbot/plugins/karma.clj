@@ -1,34 +1,46 @@
 (ns replbot.plugins.karma
-  (:require [replbot.core :refer [command]]
+  (:require [replbot.core :as core]
             [replbot.plugin :as plugin])
   (:import [replbot.plugin Plugin PluginDocs ActivationDocs]
            [org.jxmpp.util XmppStringUtils]))
 
-(defn karma [state packet]
-  (let [source (-> packet :from XmppStringUtils/parseResource)]
-    (if-let [[_ _ target] (or (re-find #"^\((inc)\s+(.+)\)" (:body packet))
-                             (re-find #"^([Tt]hanks,?|[Tt]hank you,?)\s+(.+)" (:body packet)))]
-     (let [target (.trim target)
-           inc (fnil inc 0)
-           dec (fnil dec 0)
-           transfer-karma (fn [karma-map source target]
-                            (-> karma-map
-                                (update-in [target] inc)
-                                (update-in [source] dec)))]
-       (if (= source target)
-         "You can't give karma to yourself."
-         (do (swap! state transfer-karma source target)
-             (format "%s: %s" target (-> state deref (get target))))))
-     (if-let [[command args] (command packet)]
-       (when (= command :karma)
-         (let [target (or (let [trimmed (.trim args)]
-                            (when (-> trimmed count (> 0))
-                              trimmed))
-                          source)]
-           (format "%s: %s" target (let [target-score (.get @state target)]
-                                     (or target-score "No karma")))))
-       (when-let [[_ _ target] (re-find #"^\((dec)\s+(.+)\)" (:body packet))]
-         (format "Karma can only be given, not taken. But your displeasure with %s is duly noted." target))))))
+(defn inc-match [_ packet]
+  (or (re-find #"^\((inc)\s+(.+)\)" (:body packet))
+      (re-find #"^([Tt]hanks,?|[Tt]hank you,?)\s+(.+)" (:body packet))))
+
+(defn dec-match [_ packet]
+  (re-find #"^\((dec)\s+(.+)\)" (:body packet)))
+
+(defn source "Returns the nick of the sender of packet in a muc"
+  [packet]
+  (-> packet :from XmppStringUtils/parseResource))
+
+(defn transfer-karma [state source target]
+  (-> state
+      (update-in [target] (fnil inc 0))
+      (update-in [source] (fnil dec 0))))
+
+(defn trim "Remove whitespace and leading @"
+  [s]
+  (nth (->> s .trim (re-find #"(^@?)(.+)"))
+       2))
+
+(def karma
+  (partial core/match-first
+           [[inc-match (fn [state packet [_ _ target]]
+                         (let [source (source packet)
+                               target (trim target)]
+                           (if (= source target)
+                             "You can't give karma to yourself."
+                             (format "%s: %s" target (get (swap! state transfer-karma source target)
+                                                          target)))))]
+            [(partial core/command-args :karma)
+             (fn [state packet args]
+               (let [target (or (trim args) (source packet))]
+                 (format "%s: %s" target (let [target-score (.get @state target)]
+                                           (or target-score "No karma")))))]
+            [dec-match (fn [_ _ target]
+                         (format "Karma can only be given, not taken. But your displeasure with %s is duly noted." target))]]))
 
 (def plugin
   (Plugin. #'karma

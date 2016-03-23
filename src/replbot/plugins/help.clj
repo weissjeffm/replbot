@@ -1,39 +1,40 @@
 (ns replbot.plugins.help
   (:require [replbot.plugin :as plugin]
-            [replbot.core :refer [config command]])
+            [replbot.core :refer [config command match-first command-args]])
   (:import [replbot.plugin Plugin PluginDocs ActivationDocs]))
 
-(defn help [_ packet]
-  (when-let [[command args] (command packet)]
-    (when (= command :help)
-      (if (empty? args)
-        (apply str
-               (interpose "\n\n"
-                          (for [[_ plugin] @plugin/active]
-                            (format "%s: %s\n  Behaviors: [%s]"
-                                    (-> plugin :docs :name)
-                                    (-> plugin :docs :description)
-                                    (apply str
-                                           (interpose ", "
-                                                      (map (comp name :help-kw)
-                                                           (-> plugin :docs :activations))))))))
-        (let [all-activations (->> plugin/active deref vals (map :docs) (mapcat :activations))
-              by-kw (into {} (for [activation all-activations]
-                               [(:help-kw activation) activation]))
-              activation (-> args .trim keyword by-kw)]
-          (if activation
-            (format "%s: %s"
-                    (let [usage (-> activation :usage)]
-                      (cond (vector? usage)
-                            (apply str (:command-prefix config) (-> usage first name)
-                                   " " (interpose " " (map name (rest usage))))
+(def help 
+  (partial match-first
+           [[(partial command-args :help)
+             (fn [_ _ args]
+               (if (empty? args)
+                 (apply str
+                        (interpose "\n\n"
+                                   (for [[_ plugin] @plugin/active]
+                                     (format "%s: %s\n  Behaviors: [%s]"
+                                             (-> plugin :docs :name)
+                                             (-> plugin :docs :description)
+                                             (apply str
+                                                    (interpose ", "
+                                                               (map (comp name :help-kw)
+                                                                    (-> plugin :docs :activations))))))))
+                 (let [all-activations (->> plugin/active deref vals (map :docs) (mapcat :activations))
+                       by-kw (into {} (for [activation all-activations]
+                                        [(:help-kw activation) activation]))
+                       activation (-> args .trim keyword by-kw)]
+                   (if activation
+                     (format "%s: %s"
+                             (let [usage (-> activation :usage)]
+                               (cond (vector? usage)
+                                     (apply str (:command-prefix config) (-> usage first name)
+                                            " " (interpose " " (map name (rest usage))))
 
-                            (fn? usage)
-                            (usage)
+                                     (fn? usage)
+                                     (usage)
 
-                            :else usage))
-                    (:description activation))
-            (format "%s: %s" args "Behavior not found.")))))))
+                                     :else usage))
+                             (:description activation))
+                     (format "%s: %s" args "Behavior not found.")))))]]))
 
 (def plugin (Plugin. #'help
                      (PluginDocs. "Help"
@@ -43,4 +44,4 @@
                      nil))
 
 (defmethod replbot.plugin/get-all (ns-name *ns*) [_]
-  {:help plugin})
+  {:help #'plugin})

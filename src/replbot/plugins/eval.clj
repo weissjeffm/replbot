@@ -50,9 +50,9 @@
                                   "Evaluates a clojure expression in a sandbox environment."
                                   [(ActivationDocs. :eval
                                                     #(format "%s(expression)"
-                                                             (:eval-prefix config))
+                                                             (-> config :plugins :eval :prefix))
                                                     "Evaluate (expression)")])
                      nil))
 
 (defmethod plugin/get-all (ns-name *ns*) [_]
-  {:eval plugin})
+  {:eval #'plugin})

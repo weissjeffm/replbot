@@ -28,6 +28,26 @@
         [_ command args] (some->> message :body .trim (re-find cmd-re))]
     (when command [(keyword command) (.trim args)])))
 
+(defn match-first
+  "Takes a list of behaviors, where each is a pair: a predicate that
+   operates on the incoming packet and returns nil if no action is to
+   be taken, and a function of the packet and whatever the predicate
+   returns. Calls the function if the predicate returns
+   non-nil. Iterates over the list of behaviors and quits after the
+   first matching predicate. Returns whatever the first matching
+   function returns."
+  [behaviors state packet]
+  (first (drop-while nil? (for [[pred f] behaviors]
+                            (let [pred-result (pred state packet)]
+                              (when pred-result (f state packet pred-result)))))))
+
+(defn command-args
+  "If packet matches cmd (a keyword command), return the args (as string)"
+  [cmd _ packet]
+  (when-let [[c args] (command packet)]
+    (when (= c cmd)
+      args)))
+
 (defn message-dispatch [packet]
   (println "dispatching!!" packet)
   ;; take first non-nil
