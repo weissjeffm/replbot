@@ -10,4 +10,5 @@
                  [org.igniterealtime.smack/smack-extensions "4.1.6"]
                  [org.igniterealtime.smack/smack-java7 "4.1.6"]
                  [org.igniterealtime.smack/smack-debug "4.1.6"]
-                 [clojail "1.0.4"]])
+                 [clojail "1.0.4"]
+                 [ororo "0.1.0"]])
