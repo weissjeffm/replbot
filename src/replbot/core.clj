@@ -5,21 +5,7 @@
             [replbot.plugin :as plugin])
   (:import [org.jxmpp.util XmppStringUtils]))
 
-(def config {:connection {:username "549968_3678804@chat.hipchat.com"
-                          :password "111111jm"
-                          :host "chat.hipchat.com"
-                          :port 5222
-                          :domain "chat.hipchat.com"
-                          :ping-interval 30
-                          :nick "ReplBot"}
-             :command-prefix "@"
-
-             :data-dir "/home/jweiss/.replbot/db/"
-             :hipchat-mode true
-             :load-plugins ['replbot.plugins.eval
-                            'replbot.plugins.help
-                            'replbot.plugins.karma]
-             :plugins {:eval {:prefix ","}}})
+(declare ^:dynamic config)
 
 (defn command
   "Returns command keyword and args if the message is a command, otherwise nil"
@@ -69,8 +55,11 @@
   (.addMessageListener room (xmpp-muc/respond-listener room
                                                        #'not-from-me
                                                        #'message-dispatch)))
+
 (defn start-bot []
+  (def config (read-string (slurp (str (System/getProperty "user.home") "/.replbot/config.clj"))))
   (plugin/load (:load-plugins config))
   (reset! plugin/active @plugin/library)
   (let [myconn (xmpp/make-connection (config :connection))]
-    (xmpp-muc/add-invitation-listener myconn #'on-invitation)))
+    (xmpp-muc/add-invitation-listener myconn #'on-invitation)
+    myconn))

@@ -3,10 +3,6 @@
 
 (defmulti get-all identity)
 
-(defn load [plugin-ns-sym]
-  (require plugin-ns-sym)
-  (get-all plugin-ns-sym))
-
 (defrecord ActivationDocs [help-kw usage description])
 (defrecord PluginDocs [name description activations])
 (defrecord Plugin [packet-fn docs state])
