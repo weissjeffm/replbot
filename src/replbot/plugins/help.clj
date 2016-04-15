@@ -44,4 +44,4 @@
                      nil))
 
 (defmethod replbot.plugin/get-all (ns-name *ns*) [_]
-  {:help #'plugin})
+  {:help plugin})

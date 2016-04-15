@@ -53,4 +53,4 @@
            nil))
 
 (defmethod replbot.plugin/get-all (ns-name *ns*) [_]
-  {:weather #'plugin})
+  {:weather plugin})

@@ -55,4 +55,4 @@
                      nil))
 
 (defmethod plugin/get-all (ns-name *ns*) [_]
-  {:eval #'plugin})
+  {:eval plugin})
