@@ -63,3 +63,6 @@
   (let [myconn (xmpp/make-connection (config :connection))]
     (xmpp-muc/add-invitation-listener myconn #'on-invitation)
     myconn))
+
+(defn -main [& args]
+  (start-bot))
