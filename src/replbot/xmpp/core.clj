@@ -54,7 +54,7 @@
                       (.build (doto (XMPPTCPConnectionConfiguration/builder)
                                 (.setHost host)
                                 (.setPort port)
-                                (.setDebuggerEnabled true)
+                                ; (.setDebuggerEnabled true)
                                 (.setServiceName domain)
                                 (.setUsernameAndPassword username password)
                                 (.setSecurityMode ConnectionConfiguration$SecurityMode/required))))
