@@ -9,7 +9,8 @@
            [java.util.concurrent ExecutionException]))
 
 (defn eval? [packet]
-  (starts-with? (:body packet) (-> config :plugins :eval :prefix)))
+  (when-let [body (:body packet)]
+    (starts-with? body (-> config :plugins :eval :prefix))))
 
 (defn make-safe-eval
   [{sandbox-config :sandbox}]
