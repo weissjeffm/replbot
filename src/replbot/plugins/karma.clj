@@ -1,6 +1,7 @@
 (ns replbot.plugins.karma
   (:require [replbot.core :as core]
-            [replbot.plugin :as plugin])
+            [replbot.plugin :as plugin]
+            [alandipert.enduro :as e])
   (:import [replbot.plugin Plugin PluginDocs ActivationDocs]
            [org.jxmpp.util XmppStringUtils]))
 
@@ -32,7 +33,7 @@
                                target (trim target)]
                            (if (= source target)
                              "You can't give karma to yourself."
-                             (format "%s: %s" target (get (swap! state transfer-karma source target)
+                             (format "%s: %s" target (get (e/swap! state transfer-karma source target)
                                                           target)))))]
             [(partial core/command-args :karma)
              (fn [state packet args]
@@ -53,7 +54,7 @@
                                           "(dec Bob)"
                                           "Express displeasure with Bob (no karma is transferred because it can only be given, not taken.)")
                          (ActivationDocs. :karma [:karma :someone] "Show someone's karma balance.")])
-           (atom {})))
+           (e/file-atom {} (format "%s/karma_db.clj" core/config-dir))))
 
 (defmethod replbot.plugin/get-all (ns-name *ns*) [_]
   {:karma plugin})

@@ -56,8 +56,10 @@
                                                        #'not-from-me
                                                        #'message-dispatch)))
 
+(def config-dir (str (System/getProperty "user.home") "/.replbot"))
+
 (defn start-bot []
-  (def config (read-string (slurp (str (System/getProperty "user.home") "/.replbot/config.clj"))))
+  (def config (read-string (slurp (format "%s/config.clj" config-dir))))
   (plugin/load (:load-plugins config))
   (reset! plugin/active @plugin/library)
   (let [myconn (xmpp/make-connection (config :connection))]
