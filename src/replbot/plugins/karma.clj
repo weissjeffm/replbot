@@ -6,11 +6,13 @@
            [org.jxmpp.util XmppStringUtils]))
 
 (defn inc-match [_ packet]
-  (or (re-find #"^\((inc)\s+(.+)\)" (:body packet))
-      (re-find #"^([Tt]hanks,?|[Tt]hank you,?)\s+(.+)" (:body packet))))
+  (when-let [body (:body packet)]
+    (or (re-find #"^\((inc)\s+(.+)\)" body)
+        (re-find #"^([Tt]hanks,?|[Tt]hank you,?)\s+(.+)" body))))
 
 (defn dec-match [_ packet]
-  (re-find #"^\((dec)\s+(.+)\)" (:body packet)))
+  (when-let [body (:body packet)]
+    (re-find #"^\((dec)\s+(.+)\)" body)))
 
 (defn source "Returns the nick of the sender of packet in a muc"
   [packet]
