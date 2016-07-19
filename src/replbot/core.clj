@@ -67,4 +67,8 @@
     myconn))
 
 (defn -main [& args]
-  (start-bot))
+  (start-bot)
+  ;; Don't let main thread exit
+  (loop []
+    (Thread/sleep 5000)
+    (recur)))
