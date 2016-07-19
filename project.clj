@@ -4,6 +4,7 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :main replbot.core
+  :aot [replbot.core]
   :dependencies [[org.clojure/clojure "1.8.0"]
                  ;;[quit-yo-jibber "0.6.0"]
                  [org.igniterealtime.smack/smack-core "4.1.6"]

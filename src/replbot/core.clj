@@ -3,7 +3,8 @@
             [replbot.xmpp.muc :as xmpp-muc]
             [replbot.xmpp.presence :as xmpp-presence]
             [replbot.plugin :as plugin])
-  (:import [org.jxmpp.util XmppStringUtils]))
+  (:import [org.jxmpp.util XmppStringUtils])
+  (:gen-class))
 
 (declare ^:dynamic config)
 
