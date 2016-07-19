@@ -42,7 +42,8 @@
     (processMessage [this msg]
       (let [msg (message/message-map msg)]
         (when (pred msg)
-          (.sendMessage muc (f msg)))))))
+          (when-let [reply (f msg)]
+            (.sendMessage muc reply)))))))
 
 (defn presence-listener
   [pred f]
