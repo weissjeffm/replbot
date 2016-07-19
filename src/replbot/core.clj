@@ -43,9 +43,9 @@
              (fn [packet]
                ((:packet-fn plugin) (:state plugin) packet)))]
     ;;(println "calling" fs)
-    (try (let [res (first (filter identity ((apply juxt fs) packet)))]
-           res)
-         (catch Throwable t (str "oops: " (pr-str t))))))
+    (try
+      (first (filter identity ((apply juxt fs) packet)))
+      (catch Throwable t (str "oops: " (pr-str t))))))
 
 (defn not-from-me [message]
   (-> message :from XmppStringUtils/parseResource (not= (-> config :connection :nick))))
