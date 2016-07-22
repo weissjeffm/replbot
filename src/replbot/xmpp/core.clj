@@ -8,6 +8,14 @@
            [java.security.cert X509Certificate]
            [javax.net.ssl TrustManager SSLContext X509TrustManager]))
 
+(defn stay-connected [conn]
+  (future (loop []
+            (when-not (.isConnected conn)
+              (.connect conn)
+              (.login conn)
+              (presence/set-availability! :available))
+            (Thread/sleep 5000))))
+
 (defn make-connection
   "Defines and logs in to an xmpp connection, optionally registering event
    listeners for incoming messages and presence notifications. The first
@@ -64,6 +72,7 @@
                  (presence/set-availability! :available))]
      (when message-fn  (message/add-message-listener   conn message-fn))
      (when presence-fn (presence/add-presence-listener conn presence-fn))
+     (stay-connected conn)
      conn)))
 
 (defn close-connection
