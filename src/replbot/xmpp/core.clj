@@ -10,10 +10,13 @@
 
 (defn stay-connected [conn]
   (future (loop []
-            (when-not (.isConnected conn)
-              (.connect conn)
-              (.login conn)
-              (presence/set-availability! :available))
+            (try (when-not (.isConnected conn)
+                   (println "disconnected, trying reconnect")
+                   (.connect conn)
+                   (.login conn)
+                   (presence/set-availability! :available))
+                 (catch Exception e
+                   (.printStackTrace e)))
             (Thread/sleep 5000))))
 
 (defn make-connection
